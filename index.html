@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0B0F12" />
+<title>泪吻</title>
+<meta name="description" content="凌晨有人说话，声音很轻。" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200;300&family=Noto+Sans+SC:wght@200;300;400&family=Inter:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   TOKENS
+   ============================================================ */
+:root{
+  --bg-0:#0B0F12;
+  --bg-1:#11161A;
+  --ink:#C9D1D6;
+  --ink-2:#7E8B93;
+  --ink-3:#4E5A61;
+  --accent:#8FA6B2;
+  --line:rgba(143,166,178,.13);
+  --line-2:rgba(143,166,178,.26);
+  --serif:"Noto Serif SC","Songti SC",STSong,SimSun,"Source Han Serif SC",serif;
+  --sans:"Inter","Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  --e:cubic-bezier(.22,.61,.36,1);
+  --gut:clamp(20px,5.4vw,86px);
+  --radius:2px;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg-0);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-weight:300;
+  font-size:15px;
+  line-height:1.85;
+  letter-spacing:.03em;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  overflow-x:hidden;
+  text-rendering:optimizeLegibility;
+}
+body.locked{overflow:hidden;height:100%}
+::selection{background:rgba(143,166,178,.16);color:#DCE4E9}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;letter-spacing:inherit}
+:focus-visible{outline:1px solid var(--line-2);outline-offset:4px}
+
+/* ============================================================
+   BACKGROUND: 冷光渐变 + 极慢雾光 + 噪点
+   ============================================================ */
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(120% 90% at 18% 8%, rgba(30,42,50,.55) 0%, rgba(11,15,18,0) 62%),
+    radial-gradient(90% 70% at 88% 92%, rgba(24,34,42,.42) 0%, rgba(11,15,18,0) 60%),
+    linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 58%, #090C0F 100%);
+}
+.fog{position:fixed;inset:-30%;z-index:0;pointer-events:none;filter:blur(70px);opacity:.5;will-change:transform}
+.fog.a{background:radial-gradient(38% 30% at 30% 32%, rgba(122,148,163,.16), transparent 70%);animation:driftA 140s ease-in-out infinite alternate}
+.fog.b{background:radial-gradient(32% 26% at 70% 66%, rgba(96,122,140,.13), transparent 72%);animation:driftB 190s ease-in-out infinite alternate}
+@keyframes driftA{from{transform:translate3d(-3%,-2%,0) scale(1)}to{transform:translate3d(6%,4%,0) scale(1.14)}}
+@keyframes driftB{from{transform:translate3d(4%,3%,0) scale(1.08)}to{transform:translate3d(-5%,-3%,0) scale(1)}}
+
+.grain{position:fixed;inset:-60px;z-index:40;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation:grain 9s steps(7) infinite;will-change:transform}
+@keyframes grain{
+  0%{transform:translate(0,0)}14%{transform:translate(-8px,4px)}28%{transform:translate(6px,-9px)}
+  42%{transform:translate(-5px,-5px)}56%{transform:translate(9px,6px)}70%{transform:translate(-7px,7px)}
+  84%{transform:translate(5px,-4px)}100%{transform:translate(0,0)}
+}
+/* 跟随指针的极淡冷光晕（不影响阅读） */
+.glow{position:fixed;top:0;left:0;width:520px;height:520px;margin:-260px 0 0 -260px;z-index:1;pointer-events:none;
+  background:radial-gradient(circle, rgba(143,166,178,.075), transparent 62%);
+  opacity:0;transition:opacity 1.6s var(--e);will-change:transform}
+
+/* ============================================================
+   通用排版
+   ============================================================ */
+main{position:relative;z-index:2}
+.wrap{max-width:1420px;margin:0 auto;padding:0 var(--gut)}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:clamp(16px,2.2vw,30px)}
+section{padding-block:clamp(84px,15vh,190px);position:relative}
+.rule{height:1px;background:var(--line);border:0;margin:0}
+.mono{font-family:var(--sans);font-size:10px;line-height:1.9;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-3);font-weight:400}
+.mono.a{color:var(--ink-2)}
+.serif{font-family:var(--serif);font-weight:200;letter-spacing:.06em}
+.dim{color:var(--ink-2)}
+.faint{color:var(--ink-3)}
+.sec-head{display:flex;align-items:baseline;gap:18px;margin-bottom:clamp(38px,6vw,74px)}
+.sec-head .n{font-family:var(--sans);font-size:10px;letter-spacing:.24em;color:var(--ink-3)}
+.sec-head .t{font-family:var(--serif);font-weight:200;font-size:clamp(15px,1.5vw,19px);letter-spacing:.22em;color:var(--ink-2)}
+.sec-head .line{flex:1;height:1px;background:var(--line)}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(12px);transition:opacity 1.25s var(--e),transform 1.25s var(--e);transition-delay:var(--d,0ms)}
+.rv.in{opacity:1;transform:none}
+
+/* 顶栏 */
+header.top{position:fixed;top:0;left:0;right:0;z-index:60;padding:22px var(--gut);display:flex;justify-content:space-between;align-items:center;
+  background:linear-gradient(180deg,rgba(11,15,18,.86),rgba(11,15,18,0));pointer-events:none;opacity:0;transition:opacity 1.4s var(--e)}
+header.top.on{opacity:1}
+header.top>*{pointer-events:auto}
+.brand{font-family:var(--serif);font-weight:200;font-size:13px;letter-spacing:.34em;color:var(--ink-2)}
+.sound{display:flex;align-items:center;gap:10px}
+.sound .dot{width:5px;height:5px;border-radius:50%;background:var(--ink-3);transition:background .8s var(--e),box-shadow .8s var(--e)}
+.sound.on .dot{background:var(--accent);box-shadow:0 0 10px rgba(143,166,178,.5)}
+
+/* ============================================================
+   首屏
+   ============================================================ */
+.hero{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:clamp(30px,5vh,58px);padding-top:140px}
+.hero h1{margin:0;font-family:var(--serif);font-weight:200;font-size:clamp(38px,8.4vw,116px);line-height:1.14;letter-spacing:.055em;color:#D3DAE0}
+.hero h1 span{display:block}
+.hero h1 .l2{padding-left:clamp(0px,7vw,140px);color:var(--ink)}
+.hero .sub{margin:clamp(30px,5vh,58px) 0 0;max-width:34ch;font-size:clamp(13px,1.05vw,15px);color:var(--ink-2);line-height:2.1;letter-spacing:.08em}
+.hero-meta{margin-top:clamp(56px,11vh,120px);display:grid;grid-template-columns:repeat(12,1fr);gap:20px;align-items:end;
+  padding-top:22px;border-top:1px solid var(--line)}
+.hero-meta>div:nth-child(1){grid-column:1/4}
+.hero-meta>div:nth-child(2){grid-column:5/8}
+.hero-meta>div:nth-child(3){grid-column:10/13;text-align:right}
+.scrollhint{display:inline-flex;align-items:center;gap:10px}
+.scrollhint i{display:block;width:1px;height:26px;background:linear-gradient(180deg,var(--line-2),transparent);animation:drop 3.6s var(--e) infinite}
+@keyframes drop{0%{transform:scaleY(.2);transform-origin:top;opacity:.2}45%{transform:scaleY(1);opacity:1}100%{transform:scaleY(1);opacity:0}}
+
+/* ============================================================
+   引言 + 档案
+   ============================================================ */
+.about p{max-width:44ch;margin:0;font-size:clamp(14px,1.15vw,16.5px);line-height:2.35;color:var(--ink-2)}
+.about p+p{margin-top:1.9em}
+.about .col-l{grid-column:1/7}
+.about .col-r{grid-column:8/13}
+.profile{border-top:1px solid var(--line)}
+.profile .row{display:flex;justify-content:space-between;gap:20px;padding:13px 0;border-bottom:1px solid var(--line);transition:border-color .8s var(--e)}
+.profile .row:hover{border-color:var(--line-2)}
+.profile .k{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-3)}
+.profile .v{font-size:13px;color:var(--ink);letter-spacing:.1em;text-align:right}
+.whisper{margin-top:clamp(46px,7vw,84px);padding-top:26px;border-top:1px solid var(--line)}
+.whisper p{margin:0;font-family:var(--serif);font-weight:200;font-size:clamp(14px,1.5vw,20px);letter-spacing:.3em;color:#5D6A72;line-height:2;transition:color 1.2s var(--e)}
+.whisper:hover p{color:var(--ink-2)}
+
+/* ============================================================
+   作品 / 内容区（翻转卡）
+   ============================================================ */
+.works-wrap{align-items:start}
+.grid9{grid-column:1/9;display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(10px,1.2vw,18px)}
+.flip{perspective:1400px;text-align:left;-webkit-tap-highlight-color:transparent}
+.wside{grid-column:11/13;align-self:end;padding-bottom:6px}
+.wside p{margin:0 0 12px;line-height:2}
+.grid9 .flip{display:block}
+.grid9 .fi{height:100%}
+.wside .line-s{width:38px;height:1px;background:var(--line-2);margin:16px 0 14px}
+.fi{position:relative;display:block;min-height:clamp(150px,12vw,178px);transform-style:preserve-3d;
+  transition:transform .95s var(--e);will-change:transform}
+.flip.on .fi{transform:rotateY(180deg)}
+.fc{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  border:1px solid var(--line);border-radius:var(--radius);padding:clamp(16px,1.4vw,22px);
+  display:flex;flex-direction:column;justify-content:space-between;
+  background:linear-gradient(180deg,rgba(23,30,36,.5),rgba(13,17,21,.28));
+  overflow:hidden;
+  transition:border-color .9s var(--e),background .9s var(--e)}
+.fc span{display:block}
+.flip:hover .fc{border-color:var(--line-2);background:linear-gradient(180deg,rgba(26,34,41,.6),rgba(13,17,21,.34))}
+.fc .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.fc .top .ttl{flex:1 1 auto;min-width:0}
+.fc .top .tag{flex:0 0 auto}
+.ttl{font-family:var(--serif);font-weight:200;font-size:clamp(17px,1.7vw,23px);line-height:1.5;letter-spacing:.05em;color:var(--ink);display:block;max-width:22ch}
+.tag{font-family:var(--sans);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-3);white-space:nowrap;transition:color .8s var(--e)}
+.flip:hover .tag{color:var(--accent)}
+.hintline{margin-top:14px;height:1px;background:var(--line);position:relative;overflow:hidden}
+.hintline::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--accent),transparent);
+  transform:translateX(-100%);transition:transform 1.6s var(--e);opacity:.5}
+.flip:hover .hintline::after{transform:translateX(0)}
+.fb{transform:rotateY(180deg)}
+.price{font-family:var(--serif);font-weight:200;font-size:clamp(19px,2vw,27px);letter-spacing:.06em;color:var(--accent);line-height:1.45;margin:10px 0 0}
+.price small{font-size:.46em;letter-spacing:.18em;color:var(--ink-2);margin-left:.5em}
+.backnote{font-size:11.5px;color:var(--ink-2);letter-spacing:.08em;line-height:1.8;margin-top:10px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+
+/* ============================================================
+   所属团
+   ============================================================ */
+.corps .row5{display:grid;grid-template-columns:repeat(12,1fr);gap:clamp(12px,1.6vw,20px)}
+.corp{grid-column:span 2;perspective:1200px;-webkit-tap-highlight-color:transparent}
+.corp:nth-child(1){grid-column:1/4}
+.corp:nth-child(2){grid-column:4/7}
+.corp:nth-child(3){grid-column:7/10}
+.corp:nth-child(4){grid-column:10/13}
+.corp:nth-child(5){grid-column:1/4;margin-top:clamp(12px,1.6vw,20px)}
+.corp .fi{min-height:132px}
+.corp .fc{padding:18px 20px}
+.corp .cn{font-family:var(--serif);font-weight:200;font-size:clamp(15px,1.35vw,19px);letter-spacing:.14em;color:var(--ink)}
+.corp .role{font-family:var(--serif);font-weight:200;font-size:clamp(15px,1.3vw,18px);letter-spacing:.16em;color:var(--accent);margin-top:10px}
+
+/* ============================================================
+   下单须知
+   ============================================================ */
+.notes .list{grid-column:1/8;border-top:1px solid var(--line)}
+.notes .list .nrow{padding:20px 0;border-bottom:1px solid var(--line);display:flex;gap:22px;align-items:baseline;transition:border-color .8s var(--e)}
+.notes .list .nrow:hover{border-color:var(--line-2)}
+.notes .list .nrow .i{font-size:10px;letter-spacing:.22em;color:var(--ink-3);min-width:26px}
+.notes .list .nrow .x{font-size:14px;color:var(--ink-2);letter-spacing:.06em;line-height:2}
+.notes .side{grid-column:9/13}
+.notes .side p{font-size:12.5px;color:var(--ink-3);line-height:2.2;margin:0}
+
+/* ============================================================
+   页脚
+   ============================================================ */
+footer{position:relative;z-index:2;padding:clamp(56px,8vh,104px) 0 clamp(34px,5vh,52px);border-top:1px solid var(--line)}
+.f-top{display:grid;grid-template-columns:repeat(12,1fr);gap:26px;align-items:end}
+.f-name{grid-column:1/6;font-family:var(--serif);font-weight:200;font-size:clamp(20px,2.4vw,32px);letter-spacing:.3em;color:var(--ink)}
+.f-links{grid-column:7/13;display:flex;flex-wrap:wrap;gap:clamp(16px,3vw,44px);justify-content:flex-end}
+.f-item{text-align:left;min-width:96px}
+.f-item .k{display:block}
+.f-item .v{display:block;font-size:13px;letter-spacing:.14em;color:var(--ink-2);margin-top:6px;transition:color .8s var(--e)}
+.f-item:hover .v{color:var(--accent)}
+.f-bot{margin-top:clamp(46px,7vh,86px);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  padding-top:18px;border-top:1px solid var(--line)}
+.copied{opacity:0;transition:opacity .6s var(--e)}
+.copied.on{opacity:1}
+
+/* 图片位（可选插入，默认不使用） */
+.ph{display:block;width:100%;height:100%;object-fit:cover;
+  filter:grayscale(.6) saturate(.45) brightness(.82) contrast(1.04)}
+
+/* ============================================================
+   开场：雾面玻璃
+   ============================================================ */
+.veil{position:fixed;inset:0;z-index:90;background:var(--bg-0);transition:opacity 1.5s var(--e),visibility 1.5s}
+.veil.out{opacity:0;visibility:hidden;pointer-events:none}
+#fog{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
+.vui{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;pointer-events:none;padding:0 24px;text-align:center}
+.vui .k{font-family:var(--serif);font-weight:200;font-size:clamp(13px,1.6vw,17px);letter-spacing:.44em;color:#7E8B93;transition:opacity 1.2s var(--e)}
+.vui .s{font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:#3E4950}
+.holdbar{width:min(190px,54vw);height:1px;background:rgba(143,166,178,.14);overflow:hidden}
+.holdbar i{display:block;height:100%;width:0;background:var(--accent);opacity:.7;transition:width .12s linear}
+.enter{pointer-events:auto;margin-top:6px;padding:13px 30px;border:1px solid var(--line-2);border-radius:var(--radius);
+  font-family:var(--serif);font-weight:200;font-size:13px;letter-spacing:.5em;color:var(--ink);background:rgba(17,22,26,.5);
+  opacity:0;transform:translateY(8px);transition:opacity 1.4s var(--e),transform 1.4s var(--e),border-color .8s var(--e),background .8s var(--e)}
+.enter.show{opacity:1;transform:none}
+.enter:hover{border-color:var(--accent);background:rgba(24,31,38,.6)}
+.skip{pointer-events:none;position:absolute;right:var(--gut);bottom:34px;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#3A444B;opacity:0;transition:opacity 1.4s var(--e),color .8s var(--e)}
+.skip.show{opacity:1;pointer-events:auto}
+.skip:hover{color:var(--ink-3)}
+
+/* ============================================================
+   响应式
+   ============================================================ */
+@media (max-width:900px){
+  body{font-size:14.5px}
+  .hero h1 .l2{padding-left:0}
+  .hero-meta>div:nth-child(1){grid-column:1/6}
+  .hero-meta>div:nth-child(2){grid-column:1/6;margin-top:14px}
+  .hero-meta>div:nth-child(3){grid-column:1/6;text-align:left;margin-top:14px}
+  .about .col-l,.about .col-r{grid-column:1/13}
+  .about .col-r{margin-top:clamp(44px,8vh,70px)}
+  .fi{min-height:168px}
+  .fc .top .tag{display:none}
+  .grid9{grid-column:1/13;grid-template-columns:repeat(2,1fr);gap:clamp(12px,1.6vw,18px)}
+  .grid9 .flip:last-child{grid-column:span 2}
+  .wside{grid-column:1/13;align-self:start;margin-top:26px}
+  .corp,.corp:nth-child(1),.corp:nth-child(2),.corp:nth-child(3),.corp:nth-child(4),.corp:nth-child(5){grid-column:span 6;margin-top:0}
+  .corp:nth-child(5){grid-column:span 12}
+  .notes .list,.notes .side{grid-column:1/13}
+  .notes .side{margin-top:34px}
+  .f-name{grid-column:1/13}
+  .f-links{grid-column:1/13;justify-content:flex-start;margin-top:34px}
+  .sec-head{gap:12px}
+}
+@media (max-width:420px){
+  .vui .k{letter-spacing:.34em}
+  .f-item{min-width:78px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition-duration:.01ms!important}
+  .rv{opacity:1;transform:none}
+  .glow{display:none}
+}
+</style>
+</head>
+<body class="locked">
+
+<div class="bg"></div>
+<div class="fog a"></div>
+<div class="fog b"></div>
+<div class="glow" id="glow"></div>
+<div class="grain"></div>
+
+<!-- ========================= 开场遮罩 ========================= -->
+<div class="veil" id="veil">
+  <canvas id="fog"></canvas>
+  <div class="vui">
+    <p class="k" id="vtitle">雾 · 擦开它</p>
+    <p class="s" id="vsub">移动以擦除 · 擦满为止</p>
+    <div class="holdbar"><i id="holdbar"></i></div>
+    <button class="enter" id="enter" type="button">进 入</button>
+  </div>
+  <button class="skip" id="skip" type="button">skip</button>
+</div>
+
+<header class="top" id="top">
+  <div class="brand">泪吻 · LEIWEN</div>
+  <button class="sound on" id="sound" type="button" aria-pressed="true"><span class="dot"></span><span class="mono a" id="soundtxt">sound on</span></button>
+</header>
+
+<main>
+  <!-- ========================= 1 首屏 ========================= -->
+  <section class="hero wrap">
+    <h1>
+      <span class="rv">光落下来之前</span>
+      <span class="l2 rv" style="--d:220ms">海面先安静了</span>
+    </h1>
+    <p class="sub rv" style="--d:520ms">我把凌晨留出来，声音放得很轻。</p>
+
+    <div class="hero-meta">
+      <div class="rv" style="--d:760ms">
+        <p class="mono">local time</p>
+        <p class="mono a" id="clock" style="letter-spacing:.2em">--:--:--</p>
+      </div>
+      <div class="rv" style="--d:860ms">
+        <p class="mono">coordinates</p>
+        <!-- 坐标：可替换为你的城市经纬度 -->
+        <p class="mono a">31.2304° N · 121.4737° E</p>
+      </div>
+      <div class="rv" style="--d:960ms">
+        <p class="mono scrollhint"><span>scroll</span><i></i></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================= 2 引言 / 档案 ========================= -->
+  <section class="about wrap">
+    <div class="grid">
+      <div class="col-l">
+        <div class="sec-head rv">
+          <span class="n">01</span><span class="t">引言</span><span class="line"></span>
+        </div>
+        <!-- 引言文案：可整体替换 -->
+        <p class="rv" style="--d:120ms">如果有天你想起我</p>
+        <p class="rv" style="--d:220ms">请不要在雨天</p>
+        <p class="rv" style="--d:320ms">雨天太旧了</p>
+        <p class="rv" style="--d:420ms">旧得让人分不清哪滴是雨</p>
+        <p class="rv" style="--d:520ms">哪滴是当年</p>
+      </div>
+
+      <div class="col-r">
+        <div class="sec-head rv">
+          <span class="n">02</span><span class="t">档案</span><span class="line"></span>
+        </div>
+        <div class="profile rv" style="--d:140ms">
+          <div class="row"><span class="k">name</span><span class="v">泪吻</span></div>
+          <div class="row"><span class="k">age</span><span class="v">21</span></div>
+          <div class="row"><span class="k">zodiac</span><span class="v">双鱼座</span></div>
+          <div class="row"><span class="k">attribute</span><span class="v">P</span></div>
+          <div class="row"><span class="k">mbti</span><span class="v">XNFP</span></div>
+          <div class="row"><span class="k">status</span><span class="v">八无</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="whisper rv">
+      <!-- 隐藏文案：克制一行，可替换 -->
+      <p>爱欲 活在伸手与抓住之间</p>
+    </div>
+  </section>
+
+  <!-- ========================= 3 内容 / 技能 ========================= -->
+  <section class="works wrap">
+    <div class="sec-head rv">
+      <span class="n">03</span><span class="t">内容</span><span class="line"></span><span class="n">tap to turn</span>
+    </div>
+
+    <div class="grid works-wrap">
+      <div class="grid9">
+      <!-- 01 挂麦 -->
+      <button class="flip" type="button" data-flip aria-pressed="false">
+        <span class="fi">
+          <span class="fc ff">
+            <span class="top"><span class="ttl">挂麦</span><span class="tag">01 — on mic</span></span>
+            <span class="bot"><span class="mono">在麦上 · 说话或不出声</span><span class="hintline"></span></span>
+          </span>
+          <span class="fc fb">
+            <span class="mono a">rate / 价格</span>
+            <span><span class="price">团价</span><span class="backnote">跟随团单价格，场次与时长请提前说明。</span></span>
+          </span>
+        </span>
+      </button>
+
+      <!-- 02 一起听 -->
+      <button class="flip" type="button" data-flip aria-pressed="false">
+        <span class="fi">
+          <span class="fc ff">
+            <span class="top"><span class="ttl">一起听</span><span class="tag">02 — listen</span></span>
+            <span class="bot"><span class="mono">同一首 · 同一段时间</span><span class="hintline"></span></span>
+          </span>
+          <span class="fc fb">
+            <span class="mono a">rate / 价格</span>
+            <span><span class="price">团价</span><span class="backnote">跟随团单价格，场次与时长请提前说明。</span></span>
+          </span>
+        </span>
+      </button>
+
+      <!-- 03 一起看 -->
+      <button class="flip" type="button" data-flip aria-pressed="false">
+        <span class="fi">
+          <span class="fc ff">
+            <span class="top"><span class="ttl">一起看</span><span class="tag">03 — watch</span></span>
+            <span class="bot"><span class="mono">同一段画面</span><span class="hintline"></span></span>
+          </span>
+          <span class="fc fb">
+            <span class="mono a">rate / 价格</span>
+            <span><span class="price">团价</span><span class="backnote">跟随团单价格，场次与时长请提前说明。</span></span>
+          </span>
+        </span>
+      </button>
+
+      <!-- 04 纯连 -->
+      <button class="flip" type="button" data-flip aria-pressed="false">
+        <span class="fi">
+          <span class="fc ff">
+            <span class="top"><span class="ttl">纯连</span><span class="tag">04 — call</span></span>
+            <span class="bot"><span class="mono">连麦 · 语音</span><span class="hintline"></span></span>
+          </span>
+          <span class="fc fb">
+            <span class="mono a">rate / 价格</span>
+            <span><span class="price">36<small>/1h</small> · 20<small>/0.5h</small></span><span class="backnote">不足半小时按半小时计。</span></span>
+          </span>
+        </span>
+      </button>
+
+      <!-- 05 哄睡 -->
+      <button class="flip" type="button" data-flip aria-pressed="false">
+        <span class="fi">
+          <span class="fc ff">
+            <span class="top"><span class="ttl">哄睡</span><span class="tag">05 — sleep</span></span>
+            <span class="bot"><span class="mono">陪到睡着为止</span><span class="hintline"></span></span>
+          </span>
+          <span class="fc fb">
+            <span class="mono a">rate / 价格</span>
+            <span><span class="price">36<small>/1h</small> · 20<small>/0.5h</small></span><span class="backnote">睡着后不额外计时。</span></span>
+          </span>
+        </span>
+      </button>
+
+      <!-- 06 树洞 -->
+      <button class="flip" type="button" data-flip aria-pressed="false">
+        <span class="fi">
+          <span class="fc ff">
+            <span class="top"><span class="ttl">树洞</span><span class="tag">06 — tree hole</span></span>
+            <span class="bot"><span class="mono">你说 · 我听</span><span class="hintline"></span></span>
+          </span>
+          <span class="fc fb">
+            <span class="mono a">rate / 价格</span>
+            <span><span class="price">36<small>/1h</small> · 20<small>/0.5h</small></span><span class="backnote">不需要把事情讲完整。</span></span>
+          </span>
+        </span>
+      </button>
+
+      <!-- 07 纯文树洞 -->
+      <button class="flip" type="button" data-flip aria-pressed="false">
+        <span class="fi">
+          <span class="fc ff">
+            <span class="top"><span class="ttl">纯文树洞</span><span class="tag">07 — text only</span></span>
+            <span class="bot"><span class="mono">只打字 · 不语音</span><span class="hintline"></span></span>
+          </span>
+          <span class="fc fb">
+            <span class="mono a">rate / 价格</span>
+            <span><span class="price">36<small>/1h</small> · 20<small>/0.5h</small></span><span class="backnote">回复可能很慢，但会回。</span></span>
+          </span>
+        </span>
+      </button>
+
+      <!-- 08 歌单 -->
+      <button class="flip" type="button" data-flip aria-pressed="false">
+        <span class="fi">
+          <span class="fc ff">
+            <span class="top"><span class="ttl">歌单</span><span class="tag">08 — song</span></span>
+            <span class="bot"><span class="mono">带伴奏 · 清唱 · 片段</span><span class="hintline"></span></span>
+          </span>
+          <span class="fc fb">
+            <span class="mono a">rate / 价格</span>
+            <span><span class="price">30 / 25 / 15</span><span class="backnote">带伴奏 30 每首 · 清唱 25 每首 · 片段 15 每段。</span></span>
+          </span>
+        </span>
+      </button>
+
+      <!-- 09 加价 -->
+      <button class="flip" type="button" data-flip aria-pressed="false">
+        <span class="fi">
+          <span class="fc ff">
+            <span class="top"><span class="ttl">加价</span><span class="tag">09 — night</span></span>
+            <span class="bot"><span class="mono">23:00 — 07:00</span><span class="hintline"></span></span>
+          </span>
+          <span class="fc fb">
+            <span class="mono a">surcharge / 加价</span>
+            <span><span class="price">+3<small>r</small> / +5<small>r</small></span><span class="backnote">23:00 — 02:00 加 3r；02:00 — 07:00 加 5r。</span></span>
+          </span>
+        </span>
+      </button>
+      </div>
+      <aside class="wside rv" style="--d:200ms">
+        <p class="mono a">note</p>
+        <div class="line-s"></div>
+        <p class="mono">九项 · 点击翻转查看价格</p>
+        <p class="mono">凌晨时段另计</p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ========================= 4 所属团 ========================= -->
+  <section class="corps wrap">
+    <div class="sec-head rv">
+      <span class="n">04</span><span class="t">所属团</span><span class="line"></span><span class="n">tap for identity</span>
+    </div>
+    <div class="row5">
+      <button class="corp flip" type="button" data-flip aria-pressed="false">
+        <span class="fi">
+          <span class="fc ff">
+            <span><span class="mono">01</span><span class="cn" style="display:block;margin-top:10px">循环</span></span>
+            <span class="mono">tap</span>
+          </span>
+          <span class="fc fb">
+            <span><span class="mono">identity</span><span class="role">陪</span></span>
+            <span class="mono">companion</span>
+          </span>
+        </span>
+      </button>
+      <button class="corp flip" type="button" data-flip aria-pressed="false">
+        <span class="fi">
+          <span class="fc ff">
+            <span><span class="mono">02</span><span class="cn" style="display:block;margin-top:10px">灯塔</span></span>
+            <span class="mono">tap</span>
+          </span>
+          <span class="fc fb">
+            <span><span class="mono">identity</span><span class="role">陪</span></span>
+            <span class="mono">companion</span>
+          </span>
+        </span>
+      </button>
+      <button class="corp flip" type="button" data-flip aria-pressed="false">
+        <span class="fi">
+          <span class="fc ff">
+            <span><span class="mono">03</span><span class="cn" style="display:block;margin-top:10px">少音馆</span></span>
+            <span class="mono">tap</span>
+          </span>
+          <span class="fc fb">
+            <span><span class="mono">identity</span><span class="role">陪</span></span>
+            <span class="mono">companion</span>
+          </span>
+        </span>
+      </button>
+      <button class="corp flip" type="button" data-flip aria-pressed="false">
+        <span class="fi">
+          <span class="fc ff">
+            <span><span class="mono">04</span><span class="cn" style="display:block;margin-top:10px">恨海情天</span></span>
+            <span class="mono">tap</span>
+          </span>
+          <span class="fc fb">
+            <span><span class="mono">identity</span><span class="role">陪</span></span>
+            <span class="mono">companion</span>
+          </span>
+        </span>
+      </button>
+      <button class="corp flip" type="button" data-flip aria-pressed="false">
+        <span class="fi">
+          <span class="fc ff">
+            <span><span class="mono">05</span><span class="cn" style="display:block;margin-top:10px">有猫</span></span>
+            <span class="mono">tap</span>
+          </span>
+          <span class="fc fb">
+            <span><span class="mono">identity</span><span class="role">陪</span></span>
+            <span class="mono">companion</span>
+          </span>
+        </span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ========================= 5 下单须知 ========================= -->
+  <section class="notes wrap">
+    <div class="sec-head rv">
+      <span class="n">05</span><span class="t">下单须知</span><span class="line"></span>
+    </div>
+    <div class="grid">
+      <div class="list rv">
+        <div class="nrow"><span class="i">01</span><span class="x">请保持对我的尊重。</span></div>
+        <div class="nrow"><span class="i">02</span><span class="x">下单请说明时段、时长与方式。</span></div>
+        <div class="nrow"><span class="i">03</span><span class="x">凌晨档请提前预约，确认再进行下单。</span></div>
+        <div class="nrow"><span class="i">04</span><span class="x">中途变更或延长，请提前说明。</span></div>
+      </div>
+      <div class="side rv" style="--d:160ms">
+        <p class="mono a" style="margin-bottom:14px">note</p>
+        <p>回复可能很慢。<br>不回复的时候，通常是在睡觉。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================= 6 页脚 ========================= -->
+  <footer>
+    <div class="wrap">
+      <div class="f-top">
+        <div class="f-name rv">泪吻</div>
+        <div class="f-links">
+          <a class="f-item rv" style="--d:120ms" href="#" id="wx" data-copy="oxo_stay_">
+            <span class="k mono">wechat</span><span class="v">oxo_stay_</span>
+          </a>
+          <button class="f-item rv" style="--d:200ms" type="button" data-locked="qq">
+            <span class="k mono">qq</span><span class="v">*** 待解锁</span>
+          </button>
+          <button class="f-item rv" style="--d:280ms" type="button" data-locked="mail">
+            <span class="k mono">email</span><span class="v">*** 待解锁</span>
+          </button>
+        </div>
+      </div>
+      <div class="f-bot">
+        <span class="mono">© 2026 泪吻 · all hours reserved</span>
+        <span class="mono copied" id="copied">已复制微信号</span>
+      </div>
+    </div>
+  </footer>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var $ = function(s,r){return (r||document).querySelector(s);};
+  var $$ = function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));};
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------------- 时钟 ---------------- */
+  var clock = $('#clock');
+  function pad(n){return n<10?'0'+n:''+n;}
+  function tick(){
+    var d = new Date();
+    clock.textContent = pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
+  }
+  tick(); setInterval(tick,1000);
+
+  /* ---------------- 声音（仅点击触发） ---------------- */
+  var AC = window.AudioContext || window.webkitAudioContext;
+  var ctx = null, master = null, soundOn = true;
+
+  function ensureAudio(){
+    if(ctx || !AC) return ctx;
+    ctx = new AC();
+    master = ctx.createGain();
+    master.gain.value = 0.0001;
+    master.connect(ctx.destination);
+
+    ambient();
+    master.gain.exponentialRampToValueAtTime(0.9, ctx.currentTime + 2.0);
+    if(ctx.state === 'suspended') ctx.resume();
+    return ctx;
+  }
+
+  function ambient(){
+    var g = ctx.createGain(); g.gain.value = 0.0001; g.connect(master);
+    var lp = ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value = 330; lp.Q.value = 0.6;
+    lp.connect(g);
+    [[54.5,0.50],[55.2,0.44],[82.4,0.17],[110.8,0.09]].forEach(function(p){
+      var o = ctx.createOscillator(); o.type='sine'; o.frequency.value = p[0];
+      var og = ctx.createGain(); og.gain.value = p[1];
+      o.connect(og); og.connect(lp); o.start();
+    });
+    // 风噪
+    var len = Math.floor(ctx.sampleRate * 4);
+    var buf = ctx.createBuffer(1, len, ctx.sampleRate);
+    var d = buf.getChannelData(0), last = 0;
+    for(var i=0;i<len;i++){ var w = Math.random()*2-1; last = (last + 0.02*w)/1.02; d[i] = last*3.1; }
+    var src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+    var bp = ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value = 430; bp.Q.value = 0.7;
+    var ng = ctx.createGain(); ng.gain.value = 0.13;
+    src.connect(bp); bp.connect(ng); ng.connect(g); src.start();
+    var lfo = ctx.createOscillator(); lfo.frequency.value = 0.04;
+    var lg = ctx.createGain(); lg.gain.value = 0.08;
+    lfo.connect(lg); lg.connect(ng.gain); lfo.start();
+    g.gain.exponentialRampToValueAtTime(0.075, ctx.currentTime + 9);
+  }
+
+  var noiseBuf = null;
+  function getNoise(){
+    if(noiseBuf) return noiseBuf;
+    var len = Math.floor(ctx.sampleRate * 0.07);
+    noiseBuf = ctx.createBuffer(1, len, ctx.sampleRate);
+    var d = noiseBuf.getChannelData(0);
+    for(var i=0;i<len;i++){ d[i] = (Math.random()*2-1) * Math.pow(1 - i/len, 2.4); }
+    return noiseBuf;
+  }
+
+  // 点击音：清脆但圆润 —— 正弦基频 + 极短倍频 + 一点空气噪声，低通削掉刺耳高频
+  function click(vol, f){
+    if(!soundOn || !ctx) return;
+    var t = ctx.currentTime;
+    vol = vol || 0.03; f = f || 660 + Math.random()*60;
+
+    var lp = ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value = 3300;
+    var hp = ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value = 170;
+    lp.connect(hp); hp.connect(master);
+
+    var o = ctx.createOscillator(); o.type='sine';
+    o.frequency.setValueAtTime(f*1.05, t);
+    o.frequency.exponentialRampToValueAtTime(f, t+0.06);
+    var g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t+0.005);
+    g.gain.exponentialRampToValueAtTime(0.0001, t+0.2);
+    o.connect(g); g.connect(lp); o.start(t); o.stop(t+0.26);
+
+    var o1 = ctx.createOscillator(); o1.type='sine'; o1.frequency.setValueAtTime(f*2.02, t);
+    var g1 = ctx.createGain();
+    g1.gain.setValueAtTime(0.0001, t);
+    g1.gain.exponentialRampToValueAtTime(vol*0.2, t+0.004);
+    g1.gain.exponentialRampToValueAtTime(0.0001, t+0.09);
+    o1.connect(g1); g1.connect(lp); o1.start(t); o1.stop(t+0.12);
+
+    var src = ctx.createBufferSource(); src.buffer = getNoise();
+    var bp = ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value = 4200; bp.Q.value = 1.1;
+    var gn = ctx.createGain();
+    gn.gain.setValueAtTime(vol*0.14, t);
+    gn.gain.exponentialRampToValueAtTime(0.0001, t+0.05);
+    src.connect(bp); bp.connect(gn); gn.connect(lp); src.start(t); src.stop(t+0.08);
+
+    var o2 = ctx.createOscillator(); o2.type='sine';
+    o2.frequency.setValueAtTime(132, t);
+    o2.frequency.exponentialRampToValueAtTime(64, t+0.14);
+    var g2 = ctx.createGain();
+    g2.gain.setValueAtTime(0.0001, t);
+    g2.gain.exponentialRampToValueAtTime(vol*0.5, t+0.01);
+    g2.gain.exponentialRampToValueAtTime(0.0001, t+0.26);
+    o2.connect(g2); g2.connect(master); o2.start(t); o2.stop(t+0.3);
+  }
+
+  function chime(){
+    if(!soundOn || !ctx) return;
+    click(0.05, 560);
+    setTimeout(function(){ click(0.035, 840); }, 190);
+  }
+
+  // 全局：仅 pointerup 且位移很小的"点击"才发声；滚动/移动不发声
+  var downX = 0, downY = 0;
+  document.addEventListener('pointerdown', function(e){ downX = e.clientX; downY = e.clientY; }, true);
+  // 交互元素自己发声，避免与全局轻音叠加
+  document.addEventListener('pointerup', function(e){
+    var t = e.target;
+    if(t && t.closest && t.closest('button,a,input')) return;
+    if(Math.abs(e.clientX-downX) > 12 || Math.abs(e.clientY-downY) > 12) return; // 滑动不发声
+    click(0.02, 660 + Math.random()*50);
+  });
+  // 键盘可达性：Enter/Space 也给一声
+  document.addEventListener('keyup', function(e){
+    if(e.key === 'Enter' || e.key === ' ') click(0.028, 620);
+  });
+
+  /* ---------------- 声音开关 ---------------- */
+  var sBtn = $('#sound'), sTxt = $('#soundtxt');
+  sBtn.addEventListener('click', function(){
+    soundOn = !soundOn;
+    sBtn.classList.toggle('on', soundOn);
+    sBtn.setAttribute('aria-pressed', String(soundOn));
+    sTxt.textContent = soundOn ? 'sound on' : 'sound off';
+    if(ctx){
+      master.gain.cancelScheduledValues(ctx.currentTime);
+      master.gain.linearRampToValueAtTime(soundOn ? 0.9 : 0.0001, ctx.currentTime + (soundOn?1.2:0.6));
+    }
+    if(soundOn){ ensureAudio(); setTimeout(function(){ click(0.04, 640); }, 260); }
+  });
+
+  /* ---------------- 开场：擦雾 ---------------- */
+  var veil = $('#veil'), cv = $('#fog'), c2 = cv.getContext('2d', {willReadFrequently:false});
+  var vTitle = $('#vtitle'), vSub = $('#vsub'), holdbar = $('#holdbar'), enterBtn = $('#enter');
+  var unlocked = false, entered = false, W = 0, H = 0;
+
+  function paintFog(){
+    W = window.innerWidth; H = window.innerHeight;
+    cv.width = Math.max(1, Math.floor(W));
+    cv.height = Math.max(1, Math.floor(H));
+    c2.globalCompositeOperation = 'source-over';
+    c2.clearRect(0,0,W,H);
+    c2.fillStyle = 'rgba(9,12,15,0.94)';
+    c2.fillRect(0,0,W,H);
+    // 雾斑
+    var blobs = 16;
+    for(var i=0;i<blobs;i++){
+      var x = Math.random()*W, y = Math.random()*H, r = (0.18+Math.random()*0.4)*Math.max(W,H);
+      var gr = c2.createRadialGradient(x,y,0,x,y,r);
+      gr.addColorStop(0,'rgba(147,168,182,0.055)');
+      gr.addColorStop(1,'rgba(147,168,182,0)');
+      c2.fillStyle = gr; c2.fillRect(0,0,W,H);
+    }
+    // 极细噪点
+    c2.globalAlpha = 0.05;
+    for(var j=0;j<2600;j++){
+      c2.fillStyle = Math.random()>0.5 ? '#9FB3BF' : '#0B0F12';
+      c2.fillRect(Math.random()*W|0, Math.random()*H|0, 1, 1);
+    }
+    c2.globalAlpha = 1;
+  }
+  paintFog();
+
+  var sampling = false;
+  function clearedRatio(){
+    var tw = 64, th = Math.max(8, Math.round(64 * H / W));
+    var t = document.createElement('canvas'); t.width = tw; t.height = th;
+    var tc = t.getContext('2d');
+    tc.drawImage(cv, 0, 0, tw, th);
+    var d;
+    try{ d = tc.getImageData(0,0,tw,th).data; }catch(err){ return 0; }
+    var cleared = 0, total = tw*th;
+    for(var i=3;i<d.length;i+=4){ if(d[i] < 46) cleared++; }
+    return cleared/total;
+  }
+
+  var R = window.innerWidth < 700 ? 62 : 96;
+  function eraseAt(x,y){
+    c2.globalCompositeOperation = 'destination-out';
+    var g = c2.createRadialGradient(x,y,0,x,y,R);
+    g.addColorStop(0,'rgba(0,0,0,1)');
+    g.addColorStop(0.55,'rgba(0,0,0,0.85)');
+    g.addColorStop(1,'rgba(0,0,0,0)');
+    c2.fillStyle = g;
+    c2.beginPath(); c2.arc(x,y,R,0,Math.PI*2); c2.fill();
+    c2.globalCompositeOperation = 'source-over';
+  }
+  function stroke(x0,y0,x1,y1){
+    var dx = x1-x0, dy = y1-y0, dist = Math.sqrt(dx*dx+dy*dy);
+    var steps = Math.max(1, Math.min(80, Math.round(dist/(R*0.28))));
+    for(var i=1;i<=steps;i++){ eraseAt(x0+dx*i/steps, y0+dy*i/steps); }
+  }
+
+  var last = null, pending = false, acc = 0, lastT = 0, WIPE_MS = 3400;
+  function queueErase(x,y){
+    var now = performance.now();
+    if(lastT) acc += Math.min(now - lastT, 110); // 只在持续擦拭时累计
+    lastT = now;
+    if(last){ stroke(last.x,last.y,x,y); } else { eraseAt(x,y); }
+    last = {x:x,y:y};
+    if(pending) return;
+    pending = true;
+    requestAnimationFrame(function(){
+      pending = false;
+      if(unlocked) return;
+      var pct = Math.min(1, acc / WIPE_MS);
+      holdbar.style.width = (pct*100).toFixed(1) + '%';
+      if(pct >= 1) unlock();
+    });
+  }
+
+  var pressing = false;
+  cv.addEventListener('pointerdown', function(e){
+    pressing = true; last = null;
+    queueErase(e.clientX, e.clientY);
+  });
+  cv.addEventListener('pointermove', function(e){
+    if(e.pointerType !== 'mouse' && !pressing) return;
+    queueErase(e.clientX, e.clientY);
+  });
+  window.addEventListener('pointerup', function(){
+    pressing = false; last = null; lastT = 0; // 停顿后不累计时间
+  });
+  cv.addEventListener('pointerup', function(e){ e.stopPropagation(); }, true);
+
+  function unlock(){
+    if(unlocked) return;
+    unlocked = true;
+    holdbar.style.width = '100%';
+    vTitle.textContent = '可以了';
+    vSub.textContent = 'enter';
+    enterBtn.classList.add('show');
+  }
+  setTimeout(function(){ $('#skip').classList.add('show'); }, 20000); // 兜底入口，20s 后才出现
+
+  var resizeT = null;
+  window.addEventListener('resize', function(){
+    clearTimeout(resizeT);
+    resizeT = setTimeout(function(){ if(!entered){ paintFog(); } }, 260);
+  });
+
+  /* ---------------- 进入主页 ---------------- */
+  function enter(){
+    if(entered) return;
+    entered = true;
+    ensureAudio();
+    if(ctx && ctx.state === 'suspended') ctx.resume();
+    setTimeout(chime, 420);
+    veil.classList.add('out');
+    document.body.classList.remove('locked');
+    $('#top').classList.add('on');
+    setTimeout(function(){ veil.style.display = 'none'; }, 1600);
+  }
+  enterBtn.addEventListener('click', function(){ ensureAudio(); click(0.045, 620); enter(); });
+  $('#skip').addEventListener('click', function(){ ensureAudio(); click(0.04, 600); enter(); });
+  window.addEventListener('keydown', function(e){ if(!entered && (e.key==='Enter')){ ensureAudio(); enter(); } });
+
+  /* ---------------- 滚动进场 ---------------- */
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); }
+    });
+  }, {threshold:0.14, rootMargin:'0px 0px -6% 0px'});
+  $$('.rv').forEach(function(el){ io.observe(el); });
+
+  /* ---------------- 翻转卡 ---------------- */
+  $$('[data-flip]').forEach(function(el){
+    el.addEventListener('click', function(){
+      var on = el.classList.toggle('on');
+      el.setAttribute('aria-pressed', String(on));
+      if(soundOn) click(on?0.05:0.032, on?720:560);
+    });
+  });
+
+  /* ---------------- 微信复制 / 待解锁 ---------------- */
+  var wx = $('#wx'), copied = $('#copied'), copyT = null;
+  wx.addEventListener('click', function(e){
+    e.preventDefault();
+    var v = wx.getAttribute('data-copy');
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(v).catch(function(){});
+    }
+    copied.classList.add('on');
+    clearTimeout(copyT);
+    copyT = setTimeout(function(){ copied.classList.remove('on'); }, 2200);
+    if(soundOn) click(0.045, 780);
+  });
+  $$('[data-locked]').forEach(function(el){
+    el.addEventListener('click', function(){
+      var v = $('.v', el);
+      v.textContent = '— 尚未开放';
+      if(soundOn) click(0.03, 480);
+      setTimeout(function(){ v.textContent = '*** 待解锁'; }, 3000);
+    });
+  });
+
+  /* ---------------- 指针冷光晕（极克制，不发声） ---------------- */
+  var glow = $('#glow');
+  if(!reduce){
+    var gx = window.innerWidth/2, gy = window.innerHeight/2, tx = gx, ty = gy, raf = null;
+    function moveGlow(e){
+      var p = e.touches ? e.touches[0] : e;
+      if(!p) return;
+      tx = p.clientX; ty = p.clientY;
+      glow.style.opacity = '1';
+      if(raf) return;
+      raf = requestAnimationFrame(function loop(){
+        gx += (tx-gx)*0.045; gy += (ty-gy)*0.045;
+        glow.style.transform = 'translate3d('+gx+'px,'+gy+'px,0)';
+        if(Math.abs(tx-gx)>0.6 || Math.abs(ty-gy)>0.6){ raf = requestAnimationFrame(loop); }
+        else { raf = null; }
+      });
+    }
+    window.addEventListener('pointermove', moveGlow, {passive:true});
+    window.addEventListener('touchmove', moveGlow, {passive:true});
+  }
+})();
+</script>
+</body>
+</html>
